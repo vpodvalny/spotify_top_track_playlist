@@ -1,0 +1,100 @@
+"Task - To create and update a monthly Spotify playlist with most played songs of that month"
+"Step 1 - Log into Spotify"
+"Step 2 - Create  playlist"
+"Step 3 - Get user's top songs"
+"Step 4 - Add top songs to the playlist"
+import json
+import sys
+import requests
+import spotipy.util as util
+import spotipy
+from hidden import token
+from hidden import username
+from hidden import scope
+from hidden import cid
+from hidden import secret
+from hidden import uri
+
+
+class Create_Playlist:
+
+    def __init__(self):
+        self.user_id = username
+        self.token = token
+
+    # Step 1 - Log into Spotify
+    def get_spotify_client(self):
+        pass
+
+    #Step 2 - Create properly formatted monthly playlist
+    def create_playlist(self):
+        request_body = json.dumps({
+            "name":"Top So Far (Python)",
+            "description": "",
+            "public":True
+
+        })
+        query = "https://api.spotify.com/v1/user/{}/playlists".format(self.vpodvalny)
+        response = requests.post(
+            query,
+            data=request_body,
+            headers={
+                "Content-Type":"application/json",
+                "Authorization":"Bearer {}".format(token)
+            }
+
+        )
+        response_json = response.json()
+
+        # the playlist id
+        return response_json("id")
+
+    # Step 3 - Get user's top tracks over medium_term
+    def top_track_scraper(self):
+        if len(sys.argv) > 1:
+            username = sys.argv[1]
+        else:
+            print("Usage: %s username" % (sys.argv[0],))
+            sys.exit()
+
+        scope = 'user-top-read'
+        token = util.prompt_for_user_token(username, scope)
+
+        if token:
+            sp = spotipy.Spotify(auth=token)
+            sp.trace = False
+            ranges = ['short_term', 'medium_term', 'long_term']
+            for range in ranges:
+                print("range:", range)
+                results = sp.current_user_top_tracks(time_range=range, limit=50)
+                for i, item in enumerate(results['items']):
+                    print(i, item['name'], '//', item['artists'][0]['name'])
+                print()
+
+        else:
+            print("Can't get token for", username)
+
+    #Step 4 - Add song to playlist
+    def add_song_to_playlist(self):
+        self.get_top_tracks()
+
+        uri = []
+        for song, info in self.all_song_info.iterm():
+            uri.append(info["spotify_uri"])
+
+            playlist_id = self.create_playlist()
+
+            request_data = json.dumps(uri)
+
+            query = "https://api.spotify.com/v1/playlists/{}/tracks".format(playlist_id)
+
+            response = requests.post(
+                query,
+                data=request_data,
+                headers={
+                    "Content_Type": "application/json",
+                    "Authorization": "Bearer {}".format(self.token)
+                }
+            )
+            response_json = response.json()
+            return response_json
